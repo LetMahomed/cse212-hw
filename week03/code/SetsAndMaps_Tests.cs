@@ -239,7 +239,7 @@ public class MazeTests
     {
         Dictionary<ValueTuple<int, int>, bool[]> map = SetupMazeMap();
         var maze = new Maze(map);
-        Assert.AreEqual("Current location (x=1, y=1)", maze.GetStatus());
+        Assert.AreEqual<string>("Current location (x=1, y=1)", maze.GetStatus());
         AssertThrowsInvalidOperationException(maze.MoveUp);
         AssertThrowsInvalidOperationException(maze.MoveLeft);
         maze.MoveRight();

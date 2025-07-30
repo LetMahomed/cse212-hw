@@ -16,54 +16,77 @@
 /// </summary>
 public class Maze
 {
-    private readonly Dictionary<ValueTuple<int, int>, bool[]> _mazeMap;
-    private int _currX = 1;
-    private int _currY = 1;
+    private Dictionary<(int, int), bool[]> maze;
+    private (int x, int y) currentLocation;
 
-    public Maze(Dictionary<ValueTuple<int, int>, bool[]> mazeMap)
+    public Maze(Dictionary<(int, int), bool[]> maze)
     {
-        _mazeMap = mazeMap;
+        this.maze = maze;
+        this.currentLocation = (0, 0);
     }
 
-    // TODO Problem 4 - ADD YOUR CODE HERE
-    /// <summary>
-    /// Check to see if you can move left.  If you can, then move.  If you
-    /// can't move, throw an InvalidOperationException with the message "Can't go that way!".
-    /// </summary>
+    public (int, int) GetCurrentLocation()
+    {
+        return currentLocation;
+    }
+
     public void MoveLeft()
     {
-        // FILL IN CODE
+        if (!maze.TryGetValue(currentLocation, out bool[] moves))
+            throw new InvalidOperationException("Current location is invalid.");
+        var newLocation = (currentLocation.x - 1, currentLocation.y);
+
+        if (moves.Length < 4 || !moves[0] || !maze.ContainsKey(newLocation))
+            throw new InvalidOperationException("Invalid left move.");
+
+        currentLocation = newLocation;
     }
 
-    /// <summary>
-    /// Check to see if you can move right.  If you can, then move.  If you
-    /// can't move, throw an InvalidOperationException with the message "Can't go that way!".
-    /// </summary>
     public void MoveRight()
     {
-        // FILL IN CODE
+        if (!maze.TryGetValue(currentLocation, out bool[] moves))
+            throw new InvalidOperationException("Current location is invalid.");
+        var newLocation = (currentLocation.x + 1, currentLocation.y);
+
+        if (moves.Length < 4 || !moves[1] || !maze.ContainsKey(newLocation))
+            throw new InvalidOperationException("Invalid right move.");
+
+        currentLocation = newLocation;
     }
 
-    /// <summary>
-    /// Check to see if you can move up.  If you can, then move.  If you
-    /// can't move, throw an InvalidOperationException with the message "Can't go that way!".
-    /// </summary>
     public void MoveUp()
     {
-        // FILL IN CODE
+        if (!maze.TryGetValue(currentLocation, out bool[] moves))
+            throw new InvalidOperationException("Current location is invalid.");
+        var newLocation = (currentLocation.x, currentLocation.y - 1);
+
+        if (moves.Length < 4 || !moves[2] || !maze.ContainsKey(newLocation))
+            throw new InvalidOperationException("Invalid up move.");
+
+        currentLocation = newLocation;
     }
 
-    /// <summary>
-    /// Check to see if you can move down.  If you can, then move.  If you
-    /// can't move, throw an InvalidOperationException with the message "Can't go that way!".
-    /// </summary>
     public void MoveDown()
     {
-        // FILL IN CODE
-    }
+        if (!maze.TryGetValue(currentLocation, out bool[] moves))
+            throw new InvalidOperationException("Current location is invalid.");
+        var newLocation = (currentLocation.x, currentLocation.y + 1);
 
-    public string GetStatus()
-    {
-        return $"Current location (x={_currX}, y={_currY})";
+        if (moves.Length < 4 || !moves[3] || !maze.ContainsKey(newLocation))
+            throw new InvalidOperationException("Invalid down move.");
+
+        currentLocation = newLocation;
     }
+    public (bool left, bool right, bool up, bool down) GetStatus()
+    {
+        if (!maze.TryGetValue(currentLocation, out bool[] moves))
+            throw new InvalidOperationException("Current location is invalid.");
+            if (moves.Length < 4)
+            throw new InvalidOperationException("Invalid moves array length.");
+        return (moves[0], moves[1], moves[2], moves[3]);
+    }
+        public void Reset()
+        {
+            currentLocation = (0, 0);
+        }
 }
