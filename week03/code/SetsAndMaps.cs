@@ -1,132 +1,89 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Net.Http;
-using System.Text.Json;
 
 public static class SetsAndMaps
 {
     public static string[] FindPairs(string[] words)
     {
-        HashSet<string> seen = [];
-        List<string> result = [];
+        HashSet<string> seen = new HashSet<string>();
+        List<string> result = new List<string>();
 
         foreach (var word in words)
         {
-            if (word.Length != 2 || word[0] == word[1]) continue;
+            if (word.Length != 2 || word[0] == word[1]) continue; 
 
-            string reversed = new([word[1], word[0]]);
+            string reversed = new string(new[] { word[1], word[0] });
 
             if (seen.Contains(reversed))
             {
-                result.Add($"{reversed} & {word}");
+                result.Add($"{reversed} & {word}"); 
+            }
+
+            seen.Add(word); 
+        }
+
+        return result.ToArray();
+    }
+
+
+    public static Dictionary<string, int> SummarizeDegrees(string filePath)
+    {
+        Dictionary<string, int> degreeCounts = new Dictionary<string, int>();
+
+        foreach (var line in File.ReadLines(filePath))
+        {
+            string[] columns = line.Split(',');
+
+            if (columns.Length < 4)
+                continue; 
+
+            string degree = columns[3].Trim();
+
+            if (string.IsNullOrEmpty(degree))
+                continue;
+
+            if (degreeCounts.ContainsKey(degree))
+            {
+                degreeCounts[degree]++;
             }
             else
             {
-                seen.Add(word);
+                degreeCounts[degree] = 1;
             }
         }
 
-        return [.. result];
-    }       
-
-    public static Dictionary<string, int> SummarizeDegrees(string filename)
-    {
-        var degrees = new Dictionary<string, int>();
-
-        foreach (var line in File.ReadLines(filename))
-        {
-            var fields = line.Split(",");
-            if (fields.Length < 4) continue;
-
-            string degree = fields[3].Trim();
-
-            if (degrees.TryGetValue(degree, out int value))
-                degrees[degree] = ++value;
-            else
-                degrees[degree] = 1;
-        }
-
-        return degrees;
+        return degreeCounts;
     }
-
     public static bool IsAnagram(string word1, string word2)
     {
-        word1 = word1.Replace(" ", "").ToLower();
-        word2 = word2.Replace(" ", "").ToLower();
+        string cleaned1 = word1.Replace(" ", "").ToLower();
+        string cleaned2 = word2.Replace(" ", "").ToLower();
 
-        if (word1.Length != word2.Length)
+        if (cleaned1.Length != cleaned2.Length)
             return false;
 
-        var counts = new Dictionary<char, int>();
+        Dictionary<char, int> letterCounts = new Dictionary<char, int>();
 
-        foreach (char c in word1)
+        foreach (char c in cleaned1)
         {
-            if (counts.TryGetValue(c, out int value))
-                counts[c] = ++value;
+            if (letterCounts.ContainsKey(c))
+                letterCounts[c]++;
             else
-                counts[c] = 1;
+                letterCounts[c] = 1;
         }
 
-        foreach (char c in word2)
+
+        foreach (char c in cleaned2)
         {
-            if (!counts.TryGetValue(c, out int value)) return false;
+            if (!letterCounts.ContainsKey(c))
+                return false;
 
-            counts[c] = --value;
+            letterCounts[c]--;
 
-            if (value < 0) return false;
+            if (letterCounts[c] < 0)
+                return false;
         }
 
         return true;
     }
-
-
-    public static string[] EarthquakeDailySummary()
-{
-    const string uri = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_day.geojson";
-    using var client = new HttpClient();
-    using var getRequestMessage = new HttpRequestMessage(HttpMethod.Get, uri);
-    using var jsonStream = client.Send(getRequestMessage).Content.ReadAsStream();
-    using var reader = new StreamReader(jsonStream);
-    var json = reader.ReadToEnd();
-
-    var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-    var featureCollection = JsonSerializer.Deserialize<EarthquakeFeatureCollection>(json, options);
-
-    List<string> summaries = [];
-
-    if (featureCollection?.Features != null)
-    {
-        foreach (var feature in featureCollection.Features)
-        {
-            var place = feature.Properties?.Place;
-            var mag = feature.Properties?.Mag;
-
-            if (!string.IsNullOrWhiteSpace(place) && mag.HasValue)
-            {
-                summaries.Add($"{place} - Mag {mag.Value}");
-            }
-        }
-    }
-
-    return [.. summaries];
-}
-
-}
-
-// JSON model classes for Earthquake data
-public class EarthquakeFeatureCollection
-{
-    public List<Feature> Features { get; set; }
-}
-
-public class Feature
-{
-    public FeatureProperties Properties { get; set; }
-}
-
-public class FeatureProperties
-{
-    public string Place { get; set; }
-    public double? Mag { get; set; }
 }
